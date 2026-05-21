@@ -2,7 +2,7 @@
 
 这个目录是一个静态周报网站。入口是 `index.html`，每周报告保存在 `reports/YYYY-MM-DD.html`。
 
-GitHub Actions 设定为每周一运行，检索主要英文政治学、国际关系、政策评论期刊，The China Quarterly 和 American Sociological Review 的新近论文，生成中文摘要与研究信息表，并自动发布到 GitHub Pages。
+GitHub Actions 设定为每周一上午 10:00（中国时间）运行，检索主要英文政治学、国际关系、政策评论期刊，The China Quarterly 和 American Sociological Review 的新近论文，生成中文摘要与研究信息表，并自动发布到 GitHub Pages。
 
 公网地址：https://jing-yeps.github.io/political-science-weekly/
 
