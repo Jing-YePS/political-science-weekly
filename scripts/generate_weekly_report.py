@@ -216,8 +216,20 @@ def collect_papers(from_date, to_date):
     return papers, empty_journals
 
 
-def openai_json(papers):
-    api_key = os.environ.get("OPENAI_API_KEY")
+def llm_json(papers):
+    provider = os.environ.get("LLM_PROVIDER", "deepseek").strip().lower()
+    if provider == "openai":
+        api_key = os.environ.get("OPENAI_API_KEY")
+        base_url = None
+        model = os.environ.get("OPENAI_MODEL", "gpt-4.1-mini")
+    elif provider == "deepseek":
+        api_key = os.environ.get("DEEPSEEK_API_KEY")
+        base_url = os.environ.get("DEEPSEEK_BASE_URL", "https://api.deepseek.com")
+        model = os.environ.get("DEEPSEEK_MODEL", "deepseek-v4-flash")
+    else:
+        api_key = os.environ.get("LLM_API_KEY")
+        base_url = os.environ.get("LLM_BASE_URL")
+        model = os.environ.get("LLM_MODEL")
     if not api_key or not papers:
         return []
     try:
@@ -226,7 +238,13 @@ def openai_json(papers):
         print(f"warning: openai package unavailable: {exc}", file=sys.stderr)
         return []
 
-    client = OpenAI(api_key=api_key)
+    if not model:
+        print("warning: LLM model is not configured", file=sys.stderr)
+        return []
+    client_kwargs = {"api_key": api_key}
+    if base_url:
+        client_kwargs["base_url"] = base_url
+    client = OpenAI(**client_kwargs)
     payload = [
         {
             "journal": paper["journal"],
@@ -245,15 +263,15 @@ def openai_json(papers):
         "只输出 JSON 对象，格式为 {\"papers\": [...]}。papers 数组中每个对象包含 keys: "
         "chinese_abstract, topic, question, method, data, findings。"
     )
-    response = client.responses.create(
-        model=os.environ.get("OPENAI_MODEL", "gpt-4.1-mini"),
-        input=[
+    response = client.chat.completions.create(
+        model=model,
+        messages=[
             {"role": "system", "content": prompt},
             {"role": "user", "content": json.dumps(payload, ensure_ascii=False)},
         ],
-        text={"format": {"type": "json_object"}},
+        response_format={"type": "json_object"},
     )
-    text = response.output_text
+    text = response.choices[0].message.content
     parsed = json.loads(text)
     if isinstance(parsed, dict):
         for key in ("papers", "items", "results"):
@@ -283,9 +301,9 @@ def fallback_analysis(paper):
 def enrich_papers(papers):
     generated = []
     try:
-        generated = openai_json(papers)
+        generated = llm_json(papers)
     except Exception as exc:
-        print(f"warning: OpenAI enrichment failed: {exc}", file=sys.stderr)
+        print(f"warning: LLM enrichment failed: {exc}", file=sys.stderr)
     for idx, paper in enumerate(papers):
         analysis = generated[idx] if idx < len(generated) and isinstance(generated[idx], dict) else fallback_analysis(paper)
         paper.update(

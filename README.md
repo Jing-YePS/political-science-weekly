@@ -8,12 +8,20 @@ GitHub Actions 设定为每周一运行，检索主要英文政治学期刊、Th
 
 ## 自动更新配置
 
-仓库需要设置 GitHub Secret：
+仓库默认使用 DeepSeek API。需要设置 GitHub Secret：
 
-- `OPENAI_API_KEY`：用于把英文摘要翻译成中文，并归纳研究主题、方法、资料和发现。
+- `DEEPSEEK_API_KEY`：用于把英文摘要翻译成中文，并归纳研究主题、方法、资料和发现。
 
 可选设置 GitHub Actions Variable：
 
-- `OPENAI_MODEL`：默认使用 `gpt-4.1-mini`。
+- `DEEPSEEK_MODEL`：默认使用 `deepseek-v4-flash`。
+- `LLM_PROVIDER`：默认是 `deepseek`；如果改成 `openai`，则读取 `OPENAI_API_KEY` 和 `OPENAI_MODEL`。
+
+也可以使用其他 OpenAI-compatible 服务：
+
+- Secret `LLM_API_KEY`
+- Variable `LLM_BASE_URL`
+- Variable `LLM_MODEL`
+- Variable `LLM_PROVIDER` 设为任意非 `deepseek` / `openai` 的名称
 
 手动补生成某周报告时，可以在 GitHub 仓库的 Actions 页面运行 `Weekly journal report`，并填写 `report_date`、`from_date`、`to_date`。
