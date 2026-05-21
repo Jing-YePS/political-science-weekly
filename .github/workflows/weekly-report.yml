@@ -6,6 +6,10 @@ on:
       report_date:
         description: "Report date, e.g. 2026-05-25"
         required: false
+      overwrite:
+        description: "Overwrite an existing report with the same date"
+        required: false
+        default: "false"
       from_date:
         description: "Coverage start date"
         required: false
@@ -48,6 +52,7 @@ jobs:
           if [ -n "${{ github.event.inputs.report_date }}" ]; then args+=(--report-date "${{ github.event.inputs.report_date }}"); fi
           if [ -n "${{ github.event.inputs.from_date }}" ]; then args+=(--from-date "${{ github.event.inputs.from_date }}"); fi
           if [ -n "${{ github.event.inputs.to_date }}" ]; then args+=(--to-date "${{ github.event.inputs.to_date }}"); fi
+          if [ "${{ github.event.inputs.overwrite }}" = "true" ]; then args+=(--overwrite); fi
           python scripts/generate_weekly_report.py "${args[@]}"
 
       - name: Commit and push changes

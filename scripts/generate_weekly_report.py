@@ -56,6 +56,7 @@ def parse_args():
     parser.add_argument("--report-date", default=iso_date(today))
     parser.add_argument("--from-date", default=iso_date(default_start))
     parser.add_argument("--to-date", default=iso_date(default_end))
+    parser.add_argument("--overwrite", action="store_true")
     return parser.parse_args()
 
 
@@ -437,8 +438,12 @@ def main():
     os.makedirs(REPORTS_DIR, exist_ok=True)
     papers, empty_journals = collect_papers(args.from_date, args.to_date)
     papers = enrich_papers(papers)
-    report_html = render_report(args.report_date, args.from_date, args.to_date, papers, empty_journals)
     report_path = os.path.join(REPORTS_DIR, f"{args.report_date}.html")
+    if os.path.exists(report_path) and not args.overwrite:
+        print(f"report_exists={report_path}")
+        print("skipped=true")
+        return
+    report_html = render_report(args.report_date, args.from_date, args.to_date, papers, empty_journals)
     with open(report_path, "w", encoding="utf-8") as handle:
         handle.write(report_html)
     update_index(args.report_date, args.from_date, args.to_date, len(papers))
