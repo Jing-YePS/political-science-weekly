@@ -1,0 +1,57 @@
+name: Weekly journal report
+
+on:
+  workflow_dispatch:
+    inputs:
+      report_date:
+        description: "Report date, e.g. 2026-05-25"
+        required: false
+      from_date:
+        description: "Coverage start date"
+        required: false
+      to_date:
+        description: "Coverage end date"
+        required: false
+  schedule:
+    - cron: "0 14 * * 1"
+
+permissions:
+  contents: write
+
+jobs:
+  build-report:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt
+
+      - name: Generate weekly report
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL: ${{ vars.OPENAI_MODEL || 'gpt-4.1-mini' }}
+        run: |
+          args=()
+          if [ -n "${{ github.event.inputs.report_date }}" ]; then args+=(--report-date "${{ github.event.inputs.report_date }}"); fi
+          if [ -n "${{ github.event.inputs.from_date }}" ]; then args+=(--from-date "${{ github.event.inputs.from_date }}"); fi
+          if [ -n "${{ github.event.inputs.to_date }}" ]; then args+=(--to-date "${{ github.event.inputs.to_date }}"); fi
+          python scripts/generate_weekly_report.py "${args[@]}"
+
+      - name: Commit and push changes
+        run: |
+          if git diff --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html reports/
+          git commit -m "Add weekly report $(date -u +%F)"
+          git push
