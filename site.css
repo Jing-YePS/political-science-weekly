@@ -81,6 +81,7 @@ h2 {
 
 .report-list li {
   display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: 16px;
   padding: 14px 16px;
@@ -111,6 +112,35 @@ h2 {
 .report-meta {
   color: var(--muted);
   font-size: 14px;
+}
+
+.report-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 18px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.download-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 8px 14px;
+  color: #ffffff;
+  background: var(--accent);
+  border-radius: 6px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.download-button.small {
+  min-height: 30px;
+  padding: 6px 10px;
+  font-size: 13px;
 }
 
 .summary {

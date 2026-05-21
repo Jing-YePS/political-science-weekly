@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import argparse
+import csv
 import datetime as dt
 import html
 import json
@@ -373,7 +374,10 @@ def render_report(report_date, from_date, to_date, papers, empty_journals):
               <p class="eyebrow">Weekly Literature Monitor</p>
               <h1>{esc(report_date)} 周报</h1>
               <p class="lede">覆盖日期：{esc(from_date)} 至 {esc(to_date)}。收录范围为主要英文政治学、国际关系、政策评论期刊，The China Quarterly 与 American Sociological Review 的新发表、FirstView、OnlineFirst 或 advance articles。</p>
-              <p class="report-meta"><a href="../index.html">返回周报目录</a></p>
+              <div class="report-actions">
+                <a href="../index.html">返回周报目录</a>
+                <a class="download-button" href="{esc(report_date)}.csv" download>下载 CSV</a>
+              </div>
             </header>
 
             <section class="summary">
@@ -415,14 +419,55 @@ def render_report(report_date, from_date, to_date, papers, empty_journals):
     )
 
 
+def write_csv(report_date, papers):
+    csv_path = os.path.join(REPORTS_DIR, f"{report_date}.csv")
+    headers = [
+        "期刊",
+        "英文题目",
+        "作者",
+        "发表日期",
+        "中文摘要",
+        "研究主题",
+        "研究问题",
+        "研究方法",
+        "研究资料/数据",
+        "主要发现",
+        "DOI",
+        "来源链接",
+    ]
+    with open(csv_path, "w", encoding="utf-8-sig", newline="") as handle:
+        writer = csv.writer(handle)
+        writer.writerow(headers)
+        for paper in papers:
+            source = paper.get("url") or (f"https://doi.org/{paper['doi']}" if paper.get("doi") else "")
+            writer.writerow(
+                [
+                    paper.get("journal", ""),
+                    paper.get("title", ""),
+                    paper.get("authors", ""),
+                    paper.get("date", ""),
+                    paper.get("chinese_abstract", ""),
+                    paper.get("topic", ""),
+                    paper.get("question", ""),
+                    paper.get("method", ""),
+                    paper.get("data", ""),
+                    paper.get("findings", ""),
+                    paper.get("doi", ""),
+                    source,
+                ]
+            )
+    return csv_path
+
+
 def update_index(report_date, from_date, to_date, count):
     with open(INDEX_PATH, "r", encoding="utf-8") as handle:
         index = handle.read()
     item = textwrap.dedent(
         f"""\
         <li>
-          <a href="reports/{esc(report_date)}.html">{esc(report_date)}</a>
+          <span><a href="reports/{esc(report_date)}.html">{esc(report_date)}</a></span>
           <span>{count} 篇论文 · 覆盖 {esc(from_date)} 至 {esc(to_date)}</span>
+          <a class="download-button small" href="reports/{esc(report_date)}.csv" download>CSV</a>
         </li>"""
     )
     pattern = re.compile(r'        <li>\s*<a href="reports/' + re.escape(report_date) + r'\.html">.*?</li>\n?', re.S)
@@ -449,8 +494,10 @@ def main():
     report_html = render_report(args.report_date, args.from_date, args.to_date, papers, empty_journals)
     with open(report_path, "w", encoding="utf-8") as handle:
         handle.write(report_html)
+    csv_path = write_csv(args.report_date, papers)
     update_index(args.report_date, args.from_date, args.to_date, len(papers))
     print(f"report={report_path}")
+    print(f"csv={csv_path}")
     print(f"papers={len(papers)}")
     print(f"empty_journals={'; '.join(empty_journals) if empty_journals else 'none'}")
 
