@@ -22,6 +22,9 @@ JOURNALS = [
     {"name": "Journal of Politics", "issns": ["0022-3816", "1468-2508"]},
     {"name": "World Politics", "issns": ["0043-8871", "1086-3338"]},
     {"name": "International Organization", "issns": ["0020-8183", "1531-5088"]},
+    {"name": "International Security", "issns": ["0162-2889", "1531-4804"]},
+    {"name": "International Studies Quarterly", "issns": ["0020-8833", "1468-2478"]},
+    {"name": "Foreign Affairs", "issns": ["0015-7120"]},
     {"name": "Comparative Political Studies", "issns": ["0010-4140", "1552-3829"]},
     {"name": "British Journal of Political Science", "issns": ["0007-1234", "1469-2112"]},
     {"name": "Political Analysis", "issns": ["1047-1987", "1476-4989"]},
@@ -369,7 +372,7 @@ def render_report(report_date, from_date, to_date, papers, empty_journals):
             <header class="masthead">
               <p class="eyebrow">Weekly Literature Monitor</p>
               <h1>{esc(report_date)} 周报</h1>
-              <p class="lede">覆盖日期：{esc(from_date)} 至 {esc(to_date)}。收录范围为主要英文政治学期刊、The China Quarterly 与 American Sociological Review 的新发表、FirstView、OnlineFirst 或 advance articles。</p>
+              <p class="lede">覆盖日期：{esc(from_date)} 至 {esc(to_date)}。收录范围为主要英文政治学、国际关系、政策评论期刊，The China Quarterly 与 American Sociological Review 的新发表、FirstView、OnlineFirst 或 advance articles。</p>
               <p class="report-meta"><a href="../index.html">返回周报目录</a></p>
             </header>
 
